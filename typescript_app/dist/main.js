@@ -1,0 +1,1 @@
+window.addEventListener("load",(function(e){document.querySelector("#target").textContent="Welcome to TypeScirpt"}));
