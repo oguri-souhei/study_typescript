@@ -1,29 +1,65 @@
-console.log("Node path = " + process.argv[0])
-console.log("script file path = " + process.argv[1])
+let table:HTMLTableElement
+let message:HTMLInputElement
 
-const data: number[] = []
-for (var i = 2; i < process.argv.length; i++) {
-  data.push(Number(process.argv[i]))
-}
-console.log(data)
-
-for (let item of data) {
-  const res = primeFactor(item)
-  console.log(item + '= ' + res)
+function showTable(html:string) {
+  table.innerHTML = html
 }
 
-function primeFactor(a: number): number[] {
-  const v: number[] = []
-  let x = a
-  let n = 2
-  while(x > n) {
-    if (x % n == 0) {
-      x = x / n
-      v.push(n)
-    } else {
-      n += n == 2 ? 1 : 2
-    }
+function doAction() {
+  const msg = message.value
+  memo.add({ message: msg, date: new Date() })
+  memo.save()
+  memo.load()
+  showTable(memo.getHtml())
+}
+
+function doInitial() {
+  memo.data = []
+  memo.save()
+  memo.load()
+  message.value = ''
+  showTable(memo.getHtml())
+}
+
+type Memo = {
+  message:string,
+  date: Date
+}
+
+class MemoData {
+  data:Memo[] = []
+
+  add(mm:Memo):void {
+    this.data.unshift(mm)
   }
-  v.push(x)
-  return v
+
+  save():void {
+    localStorage.setItem('memo_data', JSON.stringify(this.data))
+  }
+
+  load():void {
+    const readed = JSON.parse(localStorage.getItem('meom_data'))
+    this.data = readed ? readed : []
+  }
+
+  getHtml():string {
+    let html = '<thead><th>memo</th><th>date</th></thead><tbody>'
+    for(let item of this.data) {
+      html += '<tr><td>' + item.message + '</td><td>'
+          + item.date.toLocaleString() + '</td></tr>'
+    }
+    return html + '</tbody>'
+  }
 }
+
+const memo = new MemoData()
+
+window.addEventListener('load', () => {
+  table = document.querySelector('#table')
+  message = document.querySelector('#message')
+
+  document.querySelector('#btn').addEventListener('click', doAction)
+  document.querySelector('#initial').addEventListener('click', doInitial)
+  memo.load()
+  showTable(memo.getHtml())
+})
